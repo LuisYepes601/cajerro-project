@@ -26,16 +26,14 @@ function manejarConexionSocket(socket) {
     await emitirEstadoSistema();
   });
 
-  // EVENTO NUEVO: Procesar Registro de Cuenta
-  socket.on('registrar_cuenta', async ({ numeroCuenta, pin, titular, saldoInicial }) => {
-    const resultado = await atmService.registrar(numeroCuenta, pin, titular, saldoInicial);
+  socket.on('registrar_cuenta', async ({ correo, pin, titular }) => {
+    const resultado = await atmService.registrar(correo, pin, titular, 0);
     if (resultado && resultado.exito) {
       socket.emit('respuesta_registro', {
         exito: true,
-        mensaje: 'Cuenta registrada exitosamente. Ya puedes ingresar.'
+        mensaje: 'Cuenta creada exitosamente. Ya puedes ingresar con tu correo.'
       });
-      // Notifica al monitor administrativo para que muestre la nueva cuenta al instante
-      await notificarMonitor('NUEVA CUENTA', numeroCuenta, saldoInicial || 0, saldoInicial || 0);
+      await notificarMonitor('NUEVA CUENTA', resultado.cuenta.numero_cuenta, 0, 0);
     } else {
       socket.emit('respuesta_registro', {
         exito: false,
@@ -44,22 +42,20 @@ function manejarConexionSocket(socket) {
     }
   });
 
-  socket.on('login', async ({ numeroCuenta, pin }) => {
-    const resultado = await atmService.autenticar(numeroCuenta, pin);
+  socket.on('login', async ({ correo, pin }) => {
+    const resultado = await atmService.autenticar(correo, pin);
     if (resultado && resultado.exito) {
-      cuentaSesion = String(numeroCuenta);
-      
-      const cuenta = await accountRepository.obtenerPorCuenta(cuentaSesion);
-      const saldoReal = cuenta ? cuenta.saldo : (resultado.saldo || 0);
+      cuentaSesion = String(resultado.numeroCuenta);
 
       socket.emit('respuesta_login', {
         exito: true,
         titular: resultado.titular,
         numeroCuenta: cuentaSesion,
-        saldo: Number(saldoReal)
+        correo: resultado.correo,
+        saldo: Number(resultado.saldo)
       });
 
-      await notificarMonitor('LOGIN', cuentaSesion, saldoReal, saldoReal);
+      await notificarMonitor('LOGIN', cuentaSesion, resultado.saldo, resultado.saldo);
     } else {
       socket.emit('respuesta_login', { 
         exito: false, 
@@ -69,77 +65,34 @@ function manejarConexionSocket(socket) {
   });
 
   socket.on('consultar_saldo', async () => {
-    if (!cuentaSesion) {
-      return socket.emit('respuesta_operacion', { 
-        exito: false, 
-        mensaje: 'Sesión expirada. Por favor vuelve a ingresar.' 
-      });
-    }
+    if (!cuentaSesion) return socket.emit('respuesta_operacion', { exito: false, mensaje: 'Sesión expirada.' });
     const resultado = await atmService.obtenerSaldo(cuentaSesion);
-    socket.emit('respuesta_operacion', {
-      exito: true,
-      saldo: Number(resultado.saldo || 0),
-      accion: 'CONSULTAR'
-    });
+    socket.emit('respuesta_operacion', { exito: true, saldo: Number(resultado.saldo || 0), accion: 'CONSULTAR' });
   });
 
   socket.on('retirar', async ({ monto }) => {
-    if (!cuentaSesion) {
-      return socket.emit('respuesta_operacion', { 
-        exito: false, 
-        mensaje: 'Sesión expirada. Inicia sesión nuevamente.' 
-      });
-    }
+    if (!cuentaSesion) return socket.emit('respuesta_operacion', { exito: false, mensaje: 'Sesión expirada.' });
     const valorMonto = Number(monto);
     const resultado = await atmService.retirar(cuentaSesion, valorMonto);
 
     if (resultado && resultado.exito) {
-      const saldoFinal = resultado.saldo !== undefined ? resultado.saldo : resultado.nuevoSaldo;
-      
-      await notificarMonitor('RETIRO', cuentaSesion, valorMonto, saldoFinal);
-
-      socket.emit('respuesta_operacion', {
-        exito: true,
-        mensaje: resultado.mensaje,
-        saldo: Number(saldoFinal),
-        monto: valorMonto,
-        accion: 'RETIRAR'
-      });
+      await notificarMonitor('RETIRO', cuentaSesion, valorMonto, resultado.saldo);
+      socket.emit('respuesta_operacion', { exito: true, mensaje: resultado.mensaje, saldo: Number(resultado.saldo), monto: valorMonto, accion: 'RETIRAR' });
     } else {
-      socket.emit('respuesta_operacion', {
-        exito: false,
-        mensaje: (resultado && resultado.mensaje) ? resultado.mensaje : 'Saldo insuficiente.'
-      });
+      socket.emit('respuesta_operacion', { exito: false, mensaje: resultado.mensaje });
     }
   });
 
   socket.on('depositar', async ({ monto }) => {
-    if (!cuentaSesion) {
-      return socket.emit('respuesta_operacion', { 
-        exito: false, 
-        mensaje: 'Sesión expirada. Inicia sesión nuevamente.' 
-      });
-    }
+    if (!cuentaSesion) return socket.emit('respuesta_operacion', { exito: false, mensaje: 'Sesión expirada.' });
     const valorMonto = Number(monto);
     const resultado = await atmService.depositar(cuentaSesion, valorMonto);
 
     if (resultado && resultado.exito) {
-      const saldoFinal = resultado.saldo !== undefined ? resultado.saldo : resultado.nuevoSaldo;
-
-      await notificarMonitor('DEPÓSITO', cuentaSesion, valorMonto, saldoFinal);
-
-      socket.emit('respuesta_operacion', {
-        exito: true,
-        mensaje: resultado.mensaje,
-        saldo: Number(saldoFinal),
-        monto: valorMonto,
-        accion: 'DEPOSITAR'
-      });
+      await notificarMonitor('DEPÓSITO', cuentaSesion, valorMonto, resultado.saldo);
+      socket.emit('respuesta_operacion', { exito: true, mensaje: resultado.mensaje, saldo: Number(resultado.saldo), monto: valorMonto, accion: 'DEPOSITAR' });
     } else {
-      socket.emit('respuesta_operacion', {
-        exito: false,
-        mensaje: (resultado && resultado.mensaje) ? resultado.mensaje : 'Monto no válido.'
-      });
+      socket.emit('respuesta_operacion', { exito: false, mensaje: resultado.mensaje });
     }
   });
 

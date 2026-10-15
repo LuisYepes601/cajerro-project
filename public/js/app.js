@@ -1,15 +1,9 @@
 const socket = io();
 
-// Estado del Módulo "Mi Cuenta" / Cajero
-let operacionActual = null;     // 'RETIRAR' | 'DEPOSITAR' | null
-let saldoActualCuenta = 0;      // Saldo numérico en tiempo real
-let saldoVisible = true;        // Control de visibilidad del saldo
+let operacionActual = null;
+let saldoActualCuenta = 0;
+let saldoVisible = true;
 
-// ------------------------------------------------------------
-// 1. RESPUESTAS DEL SERVIDOR VÍA SOCKETS
-// ------------------------------------------------------------
-
-// Respuesta del registro de cuenta en Supabase
 socket.on('respuesta_registro', (data) => {
   const msg = document.getElementById('mensaje-estado-registro') || document.getElementById('mensaje-estado');
 
@@ -30,7 +24,6 @@ socket.on('respuesta_registro', (data) => {
   }
 });
 
-// Respuesta al iniciar sesión (Cambia de portada al Dashboard)
 socket.on('respuesta_login', (data) => {
   const msg = document.getElementById('mensaje-estado');
 
@@ -40,7 +33,6 @@ socket.on('respuesta_login', (data) => {
     saldoActualCuenta = Number(data.saldo !== undefined ? data.saldo : 0);
     saldoVisible = true;
 
-    // Actualizar nombre y número de cuenta en pantalla
     const saludoEl = document.getElementById('saludo-usuario');
     if (saludoEl) saludoEl.innerText = `Hola, ${titular}`;
 
@@ -50,13 +42,8 @@ socket.on('respuesta_login', (data) => {
     const cardHolderMain = document.getElementById('card-holder-display');
     if (cardHolderMain) cardHolderMain.innerText = titular.toUpperCase();
 
-    const cardHolderMini = document.getElementById('display-card-holder');
-    if (cardHolderMini) cardHolderMini.innerText = titular.toUpperCase();
-
-    // Actualizar la cifra del saldo
     actualizarDisplaySaldoATM();
 
-    // Ocultar portada pública y mostrar el Dashboard "Mi Cuenta"
     const vistaPublica = document.getElementById('vista-publica');
     const vistaDashboard = document.getElementById('vista-dashboard-micuenta');
 
@@ -73,7 +60,6 @@ socket.on('respuesta_login', (data) => {
   }
 });
 
-// Respuesta de las operaciones de retiro/depósito/consulta
 socket.on('respuesta_operacion', (data) => {
   const msg = document.getElementById('mensaje-estado-dash');
 
@@ -99,7 +85,6 @@ socket.on('respuesta_operacion', (data) => {
   }
 });
 
-// Respuesta al cerrar sesión
 socket.on('respuesta_logout', () => {
   saldoActualCuenta = 0;
   saldoVisible = false;
@@ -112,21 +97,8 @@ socket.on('respuesta_logout', () => {
   if (vistaPublica) vistaPublica.classList.remove('oculto');
 
   document.querySelectorAll('.public-only').forEach(el => el.style.display = 'inline-block');
-
-  const cardHolderMain = document.getElementById('card-holder-display');
-  if (cardHolderMain) cardHolderMain.innerText = 'CUENTA BANCARIA';
-
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
-
-
-// ------------------------------------------------------------
-// 2. FUNCIONES DE REGISTRO Y LOGIN
-// ------------------------------------------------------------
-
-function generarNumeroCuenta10Digitos() {
-  return Math.floor(1000000000 + Math.random() * 9000000000).toString();
-}
 
 function mostrarFormularioRegistro() {
   const formLogin = document.getElementById('box-login');
@@ -135,11 +107,6 @@ function mostrarFormularioRegistro() {
   if (formLogin && formRegistro) {
     formLogin.classList.add('oculto');
     formRegistro.classList.remove('oculto');
-
-    const inputCuenta = document.getElementById('reg-cuenta');
-    if (inputCuenta) {
-      inputCuenta.value = generarNumeroCuenta10Digitos();
-    }
   }
 }
 
@@ -154,16 +121,15 @@ function mostrarFormularioLogin() {
 }
 
 function ejecutarRegistro() {
-  const numeroCuenta = document.getElementById('reg-cuenta')?.value.trim();
+  const correo = document.getElementById('reg-correo')?.value.trim();
   const pin = document.getElementById('reg-pin')?.value.trim();
   const titular = document.getElementById('reg-titular')?.value.trim();
-  const saldoInicial = 0;
   const msg = document.getElementById('mensaje-estado-registro') || document.getElementById('mensaje-estado');
 
-  if (!numeroCuenta || !pin || !titular) {
+  if (!correo || !pin || !titular) {
     if (msg) {
       msg.style.color = '#ff4d4d';
-      msg.innerText = 'Por favor ingresa el nombre del titular y tu PIN.';
+      msg.innerText = 'Por favor completa todos los campos.';
     }
     return;
   }
@@ -171,45 +137,35 @@ function ejecutarRegistro() {
   if (pin.length < 4) {
     if (msg) {
       msg.style.color = '#ff4d4d';
-      msg.innerText = 'El PIN de seguridad debe tener al menos 4 dígitos.';
+      msg.innerText = 'El PIN debe tener al menos 4 dígitos.';
     }
     return;
   }
 
-  socket.emit('registrar_cuenta', {
-    numeroCuenta,
-    pin,
-    titular,
-    saldoInicial
-  });
-}
-
-function limpiarCamposRegistro() {
-  const regPin = document.getElementById('reg-pin');
-  const regTitular = document.getElementById('reg-titular');
-  if (regPin) regPin.value = '';
-  if (regTitular) regTitular.value = '';
+  socket.emit('registrar_cuenta', { correo, pin, titular });
 }
 
 function ejecutarLogin() {
-  const numeroCuenta = document.getElementById('input-cuenta').value.trim();
+  const correo = document.getElementById('input-correo').value.trim();
   const pin = document.getElementById('input-pin').value.trim();
   const msg = document.getElementById('mensaje-estado');
 
-  if (!numeroCuenta || !pin) {
+  if (!correo || !pin) {
     if (msg) {
       msg.style.color = '#ff4d4d';
-      msg.innerText = 'Ingresa tu número de cuenta y PIN.';
+      msg.innerText = 'Ingresa tu correo y PIN de acceso.';
     }
     return;
   }
-  socket.emit('login', { numeroCuenta, pin });
+  socket.emit('login', { correo, pin });
 }
 
-
-// ------------------------------------------------------------
-// 3. FUNCIONES DE OPERACIONES DEL CAJERO
-// ------------------------------------------------------------
+function limpiarCamposRegistro() {
+  ['reg-correo', 'reg-pin', 'reg-titular'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
 
 function consultarSaldo() {
   volverMenu();
@@ -274,11 +230,6 @@ function cerrarSesion() {
   socket.emit('logout');
 }
 
-
-// ------------------------------------------------------------
-// 4. CONTROL DE VISUALIZACIÓN DE SALDO Y COMPROBANTE
-// ------------------------------------------------------------
-
 function toggleVisibilidadSaldoATM() {
   saldoVisible = !saldoVisible;
   actualizarDisplaySaldoATM();
@@ -335,11 +286,6 @@ function generarComprobanteDigital(tipo, monto, nuevoSaldo) {
 function irAInicio() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-
-// ------------------------------------------------------------
-// 5. INTERACTIVIDAD TARJETA 3D PORTADA
-// ------------------------------------------------------------
 
 function voltearTarjeta() {
   const card = document.getElementById('interactive-card');

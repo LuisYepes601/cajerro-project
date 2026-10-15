@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banco Distribuido | Tu Banca Digital</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Luces de Fondo Dinámicas -->
+  <div class="ambient-orb orb-purple"></div>
+  <div class="ambient-orb orb-pink"></div>
+
+  <!-- Header / Navbar Principal -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-logo">
+          <span>nb</span>
+        </div>
+        <span class="brand-name">BANCO <strong>DISTRIBUIDO</strong></span>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#" class="nav-link active" id="nav-inicio" onclick="irAInicio()">Inicio</a>
+        <a href="#seccion-cuentas" class="nav-link public-only">Cuentas</a>
+        <a href="#seccion-tarjetas" class="nav-link public-only">Tarjetas</a>
+        <a href="#seccion-seguridad" class="nav-link public-only">Seguridad</a>
+        <a href="#seccion-ayuda" class="nav-link public-only">Ayuda</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Layout Principal -->
+  <main class="main-layout-container">
+
+    <!-- ============================================================
+         VISTA 1: LANDING PÚBLICA (PORTADA + SECCIONES VERTICALES)
+         ============================================================ -->
+    <div id="vista-publica" class="public-view-wrapper">
+      
+      <!-- GRILLA EXCLUSIVA PARA HERO Y TERMINAL DE LOGIN -->
+      <div class="hero-terminal-grid">
+        <!-- Hero Principal -->
+        <section class="hero-content">
+          <div class="tag-pill">EXPERIENCIA DIGITAL EN TIEMPO REAL</div>
+
+          <h1 class="hero-title">
+            Tu dinero en movimiento, <br>
+            <span class="purple-gradient-text">sin ataduras.</span>
+          </h1>
+          
+          <p class="hero-subtitle">
+            Una experiencia financiera clara, rápida y transparente. Toca la tarjeta para ver su reverso de seguridad.
+          </p>
+
+          <!-- Tarjeta 3D Volteable del Hero -->
+          <div class="card-wrapper" id="card-tilt-container">
+            <div class="debit-card" id="interactive-card" onclick="voltearTarjeta()">
+              <div class="card-face card-front">
+                <div class="card-shine"></div>
+                <div class="card-top">
+                  <span class="card-logo">nb</span>
+                  <div class="card-contactless">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <path d="M8.5 14.5A5 5 0 0 1 8.5 9.5"/>
+                      <path d="M12 17A8.5 8.5 0 0 0 12 7"/>
+                      <path d="M15.5 19.5a12 12 0 0 0 0 -15"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="card-chip"></div>
+                <div class="card-bottom">
+                  <div class="card-holder-info">
+                    <span class="holder-title">TITULAR</span>
+                    <span class="holder-name" id="card-holder-display">CUENTA BANCARIA</span>
+                  </div>
+                  <div class="mastercard-circles">
+                    <span class="circle-red"></span>
+                    <span class="circle-yellow"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-face card-back">
+                <div class="magnetic-stripe"></div>
+                <div class="card-back-body">
+                  <div class="signature-section">
+                    <div class="signature-strip">
+                      <span class="signature-text">Firma autorizada</span>
+                    </div>
+                    <div class="cvv-box">
+                      <span class="cvv-label">CVV</span>
+                      <span class="cvv-value">882</span>
+                    </div>
+                  </div>
+                  <p class="card-legal-text">
+                    Esta tarjeta es propiedad exclusiva de Banco Distribuido.
+                  </p>
+                  <div class="card-back-footer">
+                    <span class="support-number">Atención 24/7: 01 8000 910 000</span>
+                    <span class="card-logo-sm">nb</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Terminal de Ingreso -->
+        <section class="terminal-container">
+          <div class="terminal-box">
+            <div class="box-header">
+              <h2>Ingresa a tu cuenta</h2>
+              <p>Escribe tus credenciales para acceder al cajero:</p>
+            </div>
+
+            <div class="form-group">
+              <div class="input-block">
+                <label for="input-cuenta">Número de cuenta</label>
+                <input type="text" id="input-cuenta" placeholder="Ej. 1234" autocomplete="off">
+              </div>
+
+              <div class="input-block">
+                <label for="input-pin">PIN de seguridad</label>
+                <input type="password" id="input-pin" placeholder="••••" maxlength="8">
+              </div>
+            </div>
+
+            <button class="btn-primary" onclick="ejecutarLogin()">
+              <span>Entrar a mi cuenta</span>
+              <span class="arrow">→</span>
+            </button>
+
+            <div id="mensaje-estado" class="status-toast"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- SECCIONES INFORMATIVAS (APILADAS UNA DEBAJO DE LA OTRA) -->
+      <section id="seccion-cuentas" class="accounts-section">
+        <div class="section-header">
+          <span class="section-tag">Cuenta de Ahorros</span>
+          <h2>Rendimiento transparente todos los días</h2>
+          <p>Tu dinero crece desde el primer peso con una tasa fija sin comisiones ocultas.</p>
+        </div>
+        <div class="accounts-grid">
+          <div class="account-card">
+            <div class="card-meta">
+              <span class="card-meta-title">Rendimiento Anual</span>
+              <span class="card-meta-rate">13% E.A.</span>
+            </div>
+            <div class="calc-container">
+              <div class="calc-field">
+                <label for="calc-monto">Simula tu saldo retenido</label>
+                <div class="currency-input">
+                  <span class="symbol">$</span>
+                  <input type="number" id="calc-monto" value="1000000" step="100000" oninput="calcularRendimiento()">
+                </div>
+              </div>
+              <div class="calc-output-grid">
+                <div class="output-item">
+                  <span class="output-label">Estimado mensual</span>
+                  <span class="output-value" id="res-mes">$ 10.833</span>
+                </div>
+                <div class="output-item">
+                  <span class="output-label">Estimado anual</span>
+                  <span class="output-value highlight" id="res-ano">$ 130.000</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="account-card">
+            <div class="card-meta">
+              <span class="card-meta-title">Bolsillos de Ahorro</span>
+              <span class="card-meta-sub">Organiza tus metas</span>
+            </div>
+            <div class="pockets-list">
+              <div class="pocket-row">
+                <div class="pocket-header">
+                  <span class="pocket-name">Fondo de Viajes</span>
+                  <span class="pocket-amount">$ 850.000 / $ 1.200.000</span>
+                </div>
+                <div class="track-bar">
+                  <div class="track-fill" style="width: 70%;"></div>
+                </div>
+              </div>
+              <div class="pocket-row">
+                <div class="pocket-header">
+                  <span class="pocket-name">Reserva de Emergencias</span>
+                  <span class="pocket-amount">$ 2.000.000 / $ 2.000.000</span>
+                </div>
+                <div class="track-bar">
+                  <div class="track-fill success" style="width: 100%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="seccion-tarjetas" class="cards-section">
+        <div class="section-header">
+          <span class="section-tag">Gestión de Tarjetas</span>
+          <h2>Control total en la palma de tu mano</h2>
+          <p>Toca la tarjeta para voltearla y ver su respaldo de seguridad o cambia entre tu tarjeta física y virtual.</p>
+        </div>
+        <div class="cards-management-grid">
+          <div class="card-preview-box">
+            <div class="card-tab-selector">
+              <button class="tab-btn active" id="btn-tab-fisica" onclick="cambiarTipoTarjeta('fisica')">Tarjeta Física</button>
+              <button class="tab-btn" id="btn-tab-virtual" onclick="cambiarTipoTarjeta('virtual')">Tarjeta Virtual</button>
+            </div>
+            <div class="card-display-container">
+              <div class="mini-card-wrapper">
+                <div class="mini-card-display" id="mini-card-display" onclick="voltearMiniTarjeta()">
+                  <div class="mini-card-face mini-card-front">
+                    <div class="mini-card-header">
+                      <span class="mini-card-brand">nb</span>
+                      <span class="mini-card-type-tag" id="display-card-type-tag">FÍSICA</span>
+                    </div>
+                    <div class="mini-card-chip"></div>
+                    <div class="mini-card-number" id="display-card-number">•••• •••• •••• 8824</div>
+                    <div class="mini-card-footer">
+                      <div class="mini-card-info">
+                        <span class="info-lbl">TITULAR</span>
+                        <span class="info-val" id="display-card-holder">CUENTA BANCARIA</span>
+                      </div>
+                      <div class="mini-card-info">
+                        <span class="info-lbl">EXPIRACIÓN</span>
+                        <span class="info-val" id="display-card-exp">08/28</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mini-card-face mini-card-back">
+                    <div class="mini-magnetic-stripe"></div>
+                    <div class="mini-card-back-body">
+                      <div class="mini-signature-section">
+                        <div class="mini-signature-strip">
+                          <span class="mini-signature-text">Firma Autorizada</span>
+                        </div>
+                        <div class="mini-cvv-box">
+                          <span class="mini-cvv-label">CVV</span>
+                          <span class="mini-cvv-value" id="display-card-cvv">•••</span>
+                        </div>
+                      </div>
+                      <p class="mini-legal-text">
+                        Tarjeta <span id="display-card-type-text">Física</span> de uso personal e intransferible expedida por Banco Distribuido.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-reveal-cvv" onclick="toggleRevelarCVV()">
+                <span id="btn-cvv-text">Mostrar CVV Dinámico</span>
+              </button>
+            </div>
+          </div>
+          <div class="card-controls-box">
+            <div class="controls-list">
+              <div class="control-item">
+                <div class="control-text">
+                  <strong>Bloqueo Temporal</strong>
+                  <span>Congela tus compras presenciales y en línea al instante.</span>
+                </div>
+                <label class="switch-toggle">
+                  <input type="checkbox" id="toggle-bloqueo" onchange="alternarBloqueoTarjeta()">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="control-item">
+                <div class="control-text">
+                  <strong>Compras Internacionales</strong>
+                  <span>Habilita transacciones en moneda extranjera.</span>
+                </div>
+                <label class="switch-toggle">
+                  <input type="checkbox" checked id="toggle-intl">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="control-item">
+                <div class="control-text">
+                  <strong>Pagos Contactless / NFC</strong>
+                  <span>Permite compras sin contacto en datáfonos.</span>
+                </div>
+                <label class="switch-toggle">
+                  <input type="checkbox" checked id="toggle-nfc">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="limit-slider-box">
+                <div class="limit-header">
+                  <span class="limit-title">Límite Diario de Compras</span>
+                  <span class="limit-value" id="label-limite-monto">$ 2.000.000</span>
+                </div>
+                <input type="range" min="100000" max="10000000" step="100000" value="2000000" id="slider-limite" oninput="actualizarLimiteTarjeta(this.value)">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="seccion-seguridad" class="security-section">
+        <div class="section-header">
+          <span class="section-tag">Seguridad de Nivel Bancario</span>
+          <h2>Infraestructura protegida en tiempo real</h2>
+          <p>Tecnología de cifrado de última generación y protocolos de defensa continua en cada transacción.</p>
+        </div>
+        <div class="security-hero-grid">
+          <div class="security-hero-card">
+            <div class="hero-card-image hero-bg-purple">
+              <svg class="hero-svg-graphic" viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="100" cy="60" r="45" fill="url(#grad1)" opacity="0.25"/>
+                <circle cx="100" cy="60" r="30" stroke="#820AD1" stroke-width="2" stroke-dasharray="4 4"/>
+                <path d="M100 40V48M100 72V80M80 60H88M112 60H120" stroke="#820AD1" stroke-width="2.5" stroke-linecap="round"/>
+                <rect x="88" y="50" width="24" height="20" rx="4" fill="#820AD1"/>
+                <path d="M94 50V45A6 6 0 01106 45V50" stroke="#ffffff" stroke-width="2"/>
+                <circle cx="100" cy="60" r="2" fill="#ffffff"/>
+                <defs>
+                  <radialGradient id="grad1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(100 60) scale(45)">
+                    <stop stop-color="#820AD1"/>
+                    <stop offset="1" stop-color="#820AD1" stop-opacity="0"/>
+                  </radialGradient>
+                </defs>
+              </svg>
+              <span class="hero-card-badge">TLS 1.3 / WSS</span>
+            </div>
+            <div class="hero-card-content">
+              <h3>Cifrado de Extremo a Extremo</h3>
+              <p>Tus transacciones viajan a través de tunelización de sockets seguros con llave de encriptación dinámica por sesión.</p>
+              <div class="hero-card-footer">
+                <span class="hero-spec-tag">Sockets TCP en Tiempo Real</span>
+              </div>
+            </div>
+          </div>
+          <div class="security-hero-card">
+            <div class="hero-card-image hero-bg-darkpurple">
+              <svg class="hero-svg-graphic" viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="50" y="35" width="100" height="50" rx="10" fill="#19052b" stroke="rgba(168, 66, 238, 0.4)" stroke-width="1.5"/>
+                <path d="M65 52H135" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="3 3"/>
+                <circle cx="80" cy="62" r="4" fill="#a842ee"/>
+                <circle cx="93" cy="62" r="4" fill="#a842ee"/>
+                <circle cx="106" cy="62" r="4" fill="#a842ee"/>
+                <circle cx="119" cy="62" r="4" fill="#00b85c"/>
+                <path d="M100 20L115 30H85L100 20Z" fill="#a842ee" opacity="0.6"/>
+              </svg>
+              <span class="hero-card-badge">Bcrypt Hash</span>
+            </div>
+            <div class="hero-card-content">
+              <h3>Protección de Claves y PIN</h3>
+              <p>Tus credenciales nunca se guardan en texto claro. Aplicamos hasheo unidireccional irrompible con salting dinámico.</p>
+              <div class="hero-card-footer">
+                <span class="hero-spec-tag">Zero-Knowledge Storage</span>
+              </div>
+            </div>
+          </div>
+          <div class="security-hero-card">
+            <div class="hero-card-image hero-bg-emerald">
+              <svg class="hero-svg-graphic" viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M100 30L130 42V65C130 85 100 95 100 95C100 95 70 85 70 65V42L100 30Z" fill="url(#gradShield)" stroke="#00b85c" stroke-width="2"/>
+                <path d="M92 62L98 68L110 54" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <defs>
+                  <linearGradient id="gradShield" x1="100" y1="30" x2="100" y2="95" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#00b85c" stop-opacity="0.3"/>
+                    <stop offset="1" stop-color="#00b85c" stop-opacity="0.05"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span class="hero-card-badge badge-green">Defensa Activa</span>
+            </div>
+            <div class="hero-card-content">
+              <h3>Prevención Anti-Fuerza Bruta</h3>
+              <p>Detección proactiva de anomalías, limitación de tasa de intentos e interrupción inmediata ante accesos no autorizados.</p>
+              <div class="hero-card-footer">
+                <span class="hero-spec-tag">Monitoreo de Anomalías</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="seccion-ayuda" class="help-section">
+        <div class="section-header">
+          <span class="section-tag">Centro de Ayuda</span>
+          <h2>Resuelve tus dudas al instante</h2>
+          <p>Encuentra respuestas a las preguntas más frecuentes o comunícate directamente con nuestro equipo de soporte.</p>
+        </div>
+        <div class="help-search-container">
+          <div class="help-search-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="input-help-search" placeholder="Escribe tu duda o palabra clave..." oninput="filtrarPreguntas()">
+          </div>
+        </div>
+        <div class="help-grid">
+          <div class="faq-accordion-box">
+            <h3 class="help-subtitle">Preguntas Frecuentes</h3>
+            <div class="faq-list">
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                  <span>¿Cómo realizo un retiro de dinero en el cajero?</span>
+                  <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                  <p>Ingresa tu número de cuenta y PIN de seguridad en el panel del cajero, selecciona 'Retirar dinero', elige o escribe el monto deseado y confirma la operación.</p>
+                </div>
+              </div>
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                  <span>¿Qué costo o comisión tienen los depósitos y retiros?</span>
+                  <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                  <p>Todas las transacciones realizadas desde tu cuenta digital en Banco Distribuido son 100% libres de comisiones y cuotas de manejo.</p>
+                </div>
+              </div>
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                  <span>¿Cómo funciona el rendimiento diario del 13% E.A.?</span>
+                  <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                  <p>Los rendimientos se calculan automáticamente sobre el saldo disponible en tu cuenta de ahorros y se abonan de forma diaria sin cláusulas de permanencia.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="support-channels-box">
+            <h3 class="help-subtitle">Canales de Atención</h3>
+            <div class="channel-card">
+              <div class="channel-info">
+                <strong>Chat en Vivo 24/7</strong>
+                <span>Atención prioritaria e inmediata.</span>
+              </div>
+              <span class="channel-status online">Disponible</span>
+            </div>
+            <div class="channel-card">
+              <div class="channel-info">
+                <strong>Línea Gratuita Nacional</strong>
+                <span>01 8000 910 000 • Asistencia por llamada</span>
+              </div>
+              <span class="channel-status">24 Horas</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ============================================================
+         VISTA 2: DASHBOARD "MI CUENTA" (REEMPLAZA EL SUPERIOR AL LOGUEAR)
+         ============================================================ -->
+    <div id="vista-dashboard-micuenta" class="dashboard-full-page oculto">
+      <div class="dashboard-user-header">
+        <div class="user-greeting-box">
+          <div class="user-avatar-circle">nb</div>
+          <div>
+            <span class="user-status-badge">● Cuenta Autenticada</span>
+            <h1 id="saludo-usuario">Hola, Cliente</h1>
+          </div>
+        </div>
+
+        <button class="btn-logout-top" onclick="cerrarSesion()">
+          Cerrar Sesión
+        </button>
+      </div>
+
+      <div class="dashboard-balance-hero">
+        <div class="balance-card-header">
+          <span class="balance-card-title">Saldo Total Disponible</span>
+          <button class="btn-eye-toggle" onclick="toggleVisibilidadSaldoATM()">
+            <span id="btn-balance-icon">Mostrar Saldo</span>
+          </button>
+        </div>
+
+        <div class="balance-card-amount">
+          <h2 id="atm-saldo-display">$ ••••••••</h2>
+          <span class="growth-badge">+13% E.A. Rendimiento diario</span>
+        </div>
+
+        <div class="balance-card-footer">
+          <span>Cuenta N° <strong id="dash-num-cuenta">----</strong></span>
+          <span class="balance-updated">Sincronización en tiempo real</span>
+        </div>
+      </div>
+
+      <div class="dashboard-operations-section">
+        <h3 class="dash-section-title">Operaciones Rápidas</h3>
+
+        <div class="operations-grid">
+          <button class="op-card" onclick="prepararMonto('RETIRAR')">
+            <div class="op-icon bg-purple-soft">↓</div>
+            <div class="op-details">
+              <strong>Retirar Dinero</strong>
+              <span>Debitar efectivo al instante</span>
+            </div>
+          </button>
+
+          <button class="op-card" onclick="prepararMonto('DEPOSITAR')">
+            <div class="op-icon bg-green-soft">↑</div>
+            <div class="op-details">
+              <strong>Depositar Dinero</strong>
+              <span>Ingresar saldo a tu cuenta</span>
+            </div>
+          </button>
+
+          <button class="op-card" onclick="consultarSaldo()">
+            <div class="op-icon bg-blue-soft">↻</div>
+            <div class="op-details">
+              <strong>Sincronizar Saldo</strong>
+              <span>Verificar disponibilidad activa</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div id="vista-monto" class="operation-modal-box oculto">
+        <div class="modal-card">
+          <h3 id="monto-titulo">Monto de la operación</h3>
+          <p>Selecciona un monto rápido o escribe un valor libre:</p>
+
+          <div class="quick-chips">
+            <button class="chip" onclick="asignarMontoRapido(50000)">$50.000</button>
+            <button class="chip" onclick="asignarMontoRapido(100000)">$100.000</button>
+            <button class="chip" onclick="asignarMontoRapido(200000)">$200.000</button>
+            <button class="chip" onclick="asignarMontoRapido(500000)">$500.000</button>
+          </div>
+
+          <div class="input-block margin-bottom">
+            <label for="input-monto">Valor en COP ($)</label>
+            <input type="number" id="input-monto" placeholder="0" autocomplete="off">
+          </div>
+
+          <div class="button-stack">
+            <button class="btn-primary" onclick="confirmarMonto()">Confirmar Transacción</button>
+            <button class="btn-secondary" onclick="volverMenu()">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="vista-comprobante" class="operation-modal-box oculto">
+        <div class="modal-card receipt-card">
+          <div class="receipt-header">
+            <div class="receipt-logo">nb</div>
+            <h3>Comprobante Digital</h3>
+            <span class="receipt-status-tag" id="receipt-type-tag">TRANSACCIÓN</span>
+          </div>
+
+          <div class="receipt-divider"></div>
+
+          <div class="receipt-details">
+            <div class="receipt-row">
+              <span>Estado:</span>
+              <strong class="text-success">Exitosa</strong>
+            </div>
+            <div class="receipt-row">
+              <span>Fecha / Hora:</span>
+              <strong id="receipt-date">--/--/----</strong>
+            </div>
+            <div class="receipt-row">
+              <span>Ref. Operación:</span>
+              <strong id="receipt-ref" class="font-mono">#000000</strong>
+            </div>
+            <div class="receipt-row">
+              <span>Monto:</span>
+              <strong id="receipt-amount" class="amount-highlight">$ 0</strong>
+            </div>
+            <div class="receipt-row">
+              <span>Nuevo Saldo:</span>
+              <strong id="receipt-new-balance">$ 0</strong>
+            </div>
+          </div>
+
+          <div class="receipt-divider"></div>
+
+          <button class="btn-primary" onclick="volverMenu()">
+            <span>Volver al Dashboard</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="mensaje-estado-dash" class="status-toast"></div>
+    </div>
+
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/miCuenta.js"></script>
+  <script src="js/cuentas.js"></script>
+  <script src="js/tarjetas.js"></script>
+  <script src="js/seguridad.js"></script>
+  <script src="js/ayuda.js"></script>
+</body>
+</html>

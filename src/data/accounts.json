@@ -1,0 +1,12 @@
+{
+  "1234": {
+    "pin": "1111",
+    "titular": "Carlos Pérez",
+    "saldo": 1200000
+  },
+  "5678": {
+    "pin": "2222",
+    "titular": "María Gómez",
+    "saldo": 3200000
+  }
+}

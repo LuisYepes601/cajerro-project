@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banco Distribuido | Monitor de Cuentas en Vivo</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    .live-monitor-container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .monitor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 20px;
+    }
+
+    .pulse-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--success);
+      background: rgba(0, 184, 92, 0.1);
+      padding: 6px 14px;
+      border-radius: 100px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(0, 184, 92, 0.7);
+      animation: pulseGreen 1.8s infinite;
+    }
+
+    @keyframes pulseGreen {
+      0% { box-shadow: 0 0 0 0 rgba(0, 184, 92, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(0, 184, 92, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 184, 92, 0); }
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .metric-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .metric-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--nu-purple);
+    }
+
+    .live-layout-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .accounts-table-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .table-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 18px;
+    }
+
+    .accounts-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .accounts-table th {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .accounts-table td {
+      padding: 16px 14px;
+      font-size: 0.88rem;
+      border-bottom: 1px solid var(--border-subtle);
+      font-weight: 600;
+    }
+
+    .account-num-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--nu-purple);
+      background: var(--nu-purple-soft);
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .balance-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+
+    .feed-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      max-height: 520px;
+    }
+
+    .feed-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .feed-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--input-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    .feed-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .feed-type {
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .feed-type.RETIRO { color: var(--danger); }
+    .feed-type.DEPÓSITO { color: var(--success); }
+    .feed-type.LOGIN { color: var(--nu-purple); }
+
+    .feed-account {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+    }
+
+    .feed-amount {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    @media (max-width: 900px) {
+      .metrics-grid, .live-layout-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-orb orb-purple"></div>
+  <div class="ambient-orb orb-pink"></div>
+
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-logo">nb</div>
+        <span class="brand-name">BANCO <strong>DISTRIBUIDO</strong></span>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Inicio</a>
+        <a href="cuentas-en-vivo.html" class="nav-link active">Monitor en Vivo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="live-monitor-container">
+    <div class="monitor-header">
+      <div>
+        <span class="tag-pill">SISTEMA BANCARIO EN TIEMPO REAL</span>
+        <h1 style="font-size: 2rem; font-weight: 800;">Panel de Cuentas en Vivo</h1>
+      </div>
+      <div class="pulse-badge">
+        <span class="pulse-dot"></span>
+        <span>SOCKETS CONECTADOS</span>
+      </div>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <span class="metric-label">Total en Sistema</span>
+        <span class="metric-value" id="metric-total-saldo">$ 0</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Cuentas Registradas</span>
+        <span class="metric-value" id="metric-total-cuentas">0</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Transacciones Procesadas</span>
+        <span class="metric-value" id="metric-total-tx">0</span>
+      </div>
+    </div>
+
+    <div class="live-layout-grid">
+      <div class="accounts-table-card">
+        <h2 class="table-title">Estado de Cuentas</h2>
+        <table class="accounts-table">
+          <thead>
+            <tr>
+              <th>N° Cuenta</th>
+              <th>Titular</th>
+              <th>Saldo Actual</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-cuentas-body">
+            <tr>
+              <td colspan="4" style="text-align: center; color: var(--text-subtle);">Cargando cuentas...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="feed-card">
+        <h2 class="table-title">Actividad en Tiempo Real</h2>
+        <div class="feed-list" id="feed-actividad-list">
+          <div style="text-align: center; color: var(--text-subtle); padding: 20px;">
+            Esperando eventos en vivo...
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let totalTransacciones = 0;
+
+    socket.on('connect', () => {
+      socket.emit('solicitar_estado_sistema');
+    });
+
+    socket.on('estado_sistema_vivo', (data) => {
+      renderizarMonitor(data);
+    });
+
+    socket.on('evento_transaccion_vivo', (evento) => {
+      agregarEventoFeed(evento);
+    });
+
+    function renderizarMonitor(data) {
+      const body = document.getElementById('tabla-cuentas-body');
+      if (!body) return;
+
+      if (!data || !Array.isArray(data.cuentas) || data.cuentas.length === 0) {
+        body.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-subtle);">No hay cuentas registradas.</td></tr>`;
+        document.getElementById('metric-total-saldo').innerText = '$ 0';
+        document.getElementById('metric-total-cuentas').innerText = '0';
+        return;
+      }
+
+      body.innerHTML = '';
+      let totalSaldo = 0;
+
+      data.cuentas.forEach(c => {
+        const saldoNum = Number(c.saldo || 0);
+        totalSaldo += saldoNum;
+
+        const tr = document.createElement('tr');
+        tr.id = `row-cuenta-${c.numeroCuenta}`;
+        tr.innerHTML = `
+          <td><span class="account-num-badge">${c.numeroCuenta}</span></td>
+          <td>${c.titular || 'Cliente'}</td>
+          <td class="balance-text" id="saldo-cell-${c.numeroCuenta}">$ ${saldoNum.toLocaleString('es-CO')}</td>
+          <td><span style="color: var(--success); font-weight: 800;">● Activa</span></td>
+        `;
+        body.appendChild(tr);
+      });
+
+      document.getElementById('metric-total-saldo').innerText = `$ ${totalSaldo.toLocaleString('es-CO')}`;
+      document.getElementById('metric-total-cuentas').innerText = data.cuentas.length;
+    }
+
+    function agregarEventoFeed(evento) {
+      if (evento.tipo !== 'LOGIN') {
+        totalTransacciones++;
+        document.getElementById('metric-total-tx').innerText = totalTransacciones;
+      }
+
+      const list = document.getElementById('feed-actividad-list');
+      if (!list) return;
+
+      if (list.children.length === 1 && list.children[0].innerText.includes('Esperando')) {
+        list.innerHTML = '';
+      }
+
+      const item = document.createElement('div');
+      item.className = 'feed-item';
+
+      const tipoClase = (evento.tipo || 'TRANSACCION').toUpperCase();
+      const horaStr = new Date().toLocaleTimeString('es-CO');
+      const montoNum = Number(evento.monto || 0);
+
+      item.innerHTML = `
+        <div class="feed-info">
+          <span class="feed-type ${tipoClase}">${evento.tipo}</span>
+          <span class="feed-account">Cuenta #${evento.numeroCuenta} • ${horaStr}</span>
+        </div>
+        <span class="feed-amount">$ ${montoNum.toLocaleString('es-CO')}</span>
+      `;
+
+      list.insertBefore(item, list.firstChild);
+    }
+  </script>
+</body>
+</html>

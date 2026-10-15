@@ -4,7 +4,32 @@ let operacionActual = null;
 let saldoActualCuenta = 0;
 let saldoVisible = true;
 
-// 1. AL LOGUEARSE: Recibe el saldo real y lo dibuja en pantalla
+// ============================================================
+// ESCUCHADORES SOCKET.IO (RESPUESTAS DEL SERVIDOR)
+// ============================================================
+
+// 1. RESPUESTA DE REGISTRO DE CUENTA
+socket.on('respuesta_registro', (data) => {
+  const msg = document.getElementById('mensaje-estado-registro') || document.getElementById('mensaje-estado');
+
+  if (data && data.exito) {
+    if (msg) {
+      msg.style.color = '#00b85c';
+      msg.innerText = data.mensaje || 'Cuenta registrada exitosamente. ¡Ya puedes ingresar!';
+    }
+    limpiarCamposRegistro();
+    setTimeout(() => {
+      mostrarFormularioLogin();
+    }, 2000);
+  } else {
+    if (msg) {
+      msg.style.color = '#ff4d4d';
+      msg.innerText = (data && data.mensaje) ? data.mensaje : 'Error al registrar la cuenta.';
+    }
+  }
+});
+
+// 2. AL LOGUEARSE
 socket.on('respuesta_login', (data) => {
   const msg = document.getElementById('mensaje-estado');
 
@@ -12,17 +37,15 @@ socket.on('respuesta_login', (data) => {
     if (msg) msg.innerText = '';
     const titular = data.titular || 'Cliente';
     
-    // Asigna el saldo recibido directamente desde el backend
     saldoActualCuenta = Number(data.saldo !== undefined ? data.saldo : 0);
     saldoVisible = true;
 
     document.getElementById('saludo-usuario').innerText = `Hola, ${titular}`;
-    document.getElementById('dash-num-cuenta').innerText = data.numeroCuenta || '1234';
+    document.getElementById('dash-num-cuenta').innerText = data.numeroCuenta || '----';
 
     const cardHolder = document.getElementById('card-holder-display');
     if (cardHolder) cardHolder.innerText = titular.toUpperCase();
 
-    // Muestra el saldo real al instante
     actualizarDisplaySaldo();
 
     document.getElementById('vista-publica').classList.add('oculto');
@@ -31,11 +54,14 @@ socket.on('respuesta_login', (data) => {
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else {
-    if (msg) msg.innerText = (data && data.mensaje) ? data.mensaje : 'Credenciales incorrectas.';
+    if (msg) {
+      msg.style.color = '#ff4d4d';
+      msg.innerText = (data && data.mensaje) ? data.mensaje : 'Credenciales incorrectas.';
+    }
   }
 });
 
-// 2. TRAS CADA OPERACIÓN (RETIRO / DEPÓSITO): Actualiza el saldo en vivo
+// 3. TRAS CADA OPERACIÓN (RETIRO / DEPÓSITO)
 socket.on('respuesta_operacion', (data) => {
   const msg = document.getElementById('mensaje-estado-dash');
 
@@ -43,14 +69,12 @@ socket.on('respuesta_operacion', (data) => {
     if (data.saldo !== undefined) {
       saldoActualCuenta = Number(data.saldo);
       saldoVisible = true;
-      actualizarDisplaySaldo(true); // Actualiza la cifra y le da una animación visual
+      actualizarDisplaySaldo(true);
     }
 
     if (operacionActual) {
       const monto = document.getElementById('input-monto').value;
-      // Cierra la caja de entrada de monto
       document.getElementById('vista-monto').classList.add('oculto');
-      // Genera el recibo digital de la transacción
       generarComprobanteDigital(operacionActual, monto, saldoActualCuenta);
       operacionActual = null;
     }
@@ -61,7 +85,7 @@ socket.on('respuesta_operacion', (data) => {
   }
 });
 
-// 3. LOGOUT
+// 4. LOGOUT
 socket.on('respuesta_logout', () => {
   saldoActualCuenta = 0;
   saldoVisible = false;
@@ -75,8 +99,12 @@ socket.on('respuesta_logout', () => {
 });
 
 // ============================================================
-// FUNCIONES DE CONTROL
+// FUNCIONES DE REGISTRO Y LOGIN
 // ============================================================
+
+function generarNumeroCuenta10Digitos() {
+  return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+}
 
 function ejecutarLogin() {
   const numeroCuenta = document.getElementById('input-cuenta').value.trim();
@@ -84,11 +112,82 @@ function ejecutarLogin() {
   const msg = document.getElementById('mensaje-estado');
 
   if (!numeroCuenta || !pin) {
-    if (msg) msg.innerText = 'Ingresa tu número de cuenta y PIN.';
+    if (msg) {
+      msg.style.color = '#ff4d4d';
+      msg.innerText = 'Ingresa tu número de cuenta y PIN.';
+    }
     return;
   }
   socket.emit('login', { numeroCuenta, pin });
 }
+
+function ejecutarRegistro() {
+  const numeroCuenta = document.getElementById('reg-cuenta')?.value.trim();
+  const pin = document.getElementById('reg-pin')?.value.trim();
+  const titular = document.getElementById('reg-titular')?.value.trim();
+  const saldoInicial = 0; // Saldo inicial fijado en $0 COP
+  const msg = document.getElementById('mensaje-estado-registro') || document.getElementById('mensaje-estado');
+
+  if (!numeroCuenta || !pin || !titular) {
+    if (msg) {
+      msg.style.color = '#ff4d4d';
+      msg.innerText = 'Ingresa el nombre del titular y tu PIN de seguridad.';
+    }
+    return;
+  }
+
+  if (pin.length < 4) {
+    if (msg) {
+      msg.style.color = '#ff4d4d';
+      msg.innerText = 'El PIN de seguridad debe tener al menos 4 dígitos.';
+    }
+    return;
+  }
+
+  socket.emit('registrar_cuenta', {
+    numeroCuenta,
+    pin,
+    titular,
+    saldoInicial
+  });
+}
+
+function mostrarFormularioRegistro() {
+  const formLogin = document.getElementById('box-login');
+  const formRegistro = document.getElementById('box-registro');
+
+  if (formLogin && formRegistro) {
+    formLogin.classList.add('oculto');
+    formRegistro.classList.remove('oculto');
+
+    // Genera automáticamente un número de cuenta aleatorio de 10 dígitos
+    const inputCuenta = document.getElementById('reg-cuenta');
+    if (inputCuenta) {
+      inputCuenta.value = generarNumeroCuenta10Digitos();
+    }
+  }
+}
+
+function mostrarFormularioLogin() {
+  const formLogin = document.getElementById('box-login');
+  const formRegistro = document.getElementById('box-registro');
+
+  if (formLogin && formRegistro) {
+    formRegistro.classList.add('oculto');
+    formLogin.classList.remove('oculto');
+  }
+}
+
+function limpiarCamposRegistro() {
+  const regPin = document.getElementById('reg-pin');
+  const regTitular = document.getElementById('reg-titular');
+  if (regPin) regPin.value = '';
+  if (regTitular) regTitular.value = '';
+}
+
+// ============================================================
+// FUNCIONES DE CONTROL DEL CAJERO
+// ============================================================
 
 function consultarSaldo() {
   volverMenu();

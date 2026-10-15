@@ -43,7 +43,7 @@
          ============================================================ -->
     <div id="vista-publica" class="public-view-wrapper">
       
-      <!-- GRILLA EXCLUSIVA PARA HERO Y TERMINAL DE LOGIN -->
+      <!-- GRILLA EXCLUSIVA PARA HERO Y TERMINAL DE LOGIN/REGISTRO -->
       <div class="hero-terminal-grid">
         <!-- Hero Principal -->
         <section class="hero-content">
@@ -111,9 +111,11 @@
           </div>
         </section>
 
-        <!-- Terminal de Ingreso -->
+        <!-- Terminal de Ingreso y Registro -->
         <section class="terminal-container">
-          <div class="terminal-box">
+          
+          <!-- FORMULARIO 1: INGRESO / LOGIN -->
+          <div id="box-login" class="terminal-box">
             <div class="box-header">
               <h2>Ingresa a tu cuenta</h2>
               <p>Escribe tus credenciales para acceder al cajero:</p>
@@ -137,11 +139,54 @@
             </button>
 
             <div id="mensaje-estado" class="status-toast"></div>
+
+            <div style="margin-top: 18px; text-align: center; font-size: 0.9rem;">
+              <span style="color: rgba(255,255,255,0.7);">¿Aún no tienes cuenta? </span>
+              <a href="javascript:void(0)" onclick="mostrarFormularioRegistro()" style="color: #a842ee; font-weight: 700; text-decoration: underline;">Regístrate aquí</a>
+            </div>
           </div>
+
+          <!-- FORMULARIO 2: REGISTRO DE CUENTA (Oculto inicialmente) -->
+          <div id="box-registro" class="terminal-box oculto">
+            <div class="box-header">
+              <h2>Crear nueva cuenta</h2>
+              <p>Tu cuenta se creará con saldo inicial de <strong>$0 COP</strong>:</p>
+            </div>
+
+            <div class="form-group">
+              <div class="input-block">
+                <label for="reg-cuenta">Número de cuenta (Auto-generado 10 dígitos)</label>
+                <input type="text" id="reg-cuenta" readonly style="background: rgba(255,255,255,0.08); color: #00b85c; font-weight: 700; letter-spacing: 1px;" />
+              </div>
+
+              <div class="input-block">
+                <label for="reg-titular">Nombre del titular</label>
+                <input type="text" id="reg-titular" placeholder="Ej. Carlos Pérez" autocomplete="off">
+              </div>
+
+              <div class="input-block">
+                <label for="reg-pin">PIN de seguridad</label>
+                <input type="password" id="reg-pin" placeholder="•••• (mínimo 4 dígitos)" maxlength="8">
+              </div>
+            </div>
+
+            <button class="btn-primary" onclick="ejecutarRegistro()">
+              <span>Registrar Cuenta ($0 COP)</span>
+              <span class="arrow">→</span>
+            </button>
+
+            <div id="mensaje-estado-registro" class="status-toast"></div>
+
+            <div style="margin-top: 18px; text-align: center; font-size: 0.9rem;">
+              <span style="color: rgba(255,255,255,0.7);">¿Ya tienes una cuenta? </span>
+              <a href="javascript:void(0)" onclick="mostrarFormularioLogin()" style="color: #a842ee; font-weight: 700; text-decoration: underline;">Inicia sesión</a>
+            </div>
+          </div>
+
         </section>
       </div>
 
-      <!-- SECCIONES INFORMATIVAS (APILADAS UNA DEBAJO DE LA OTRA) -->
+      <!-- SECCIONES INFORMATIVAS -->
       <section id="seccion-cuentas" class="accounts-section">
         <div class="section-header">
           <span class="section-tag">Cuenta de Ahorros</span>
@@ -341,7 +386,7 @@
             <div class="hero-card-image hero-bg-darkpurple">
               <svg class="hero-svg-graphic" viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="50" y="35" width="100" height="50" rx="10" fill="#19052b" stroke="rgba(168, 66, 238, 0.4)" stroke-width="1.5"/>
-                <path d="M65 52H135" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="3 3"/>
+                <path d="M65 52H135" stroke="rgba(255,255,255,0.15)" stroke-width="3" stroke-dasharray="3 3"/>
                 <circle cx="80" cy="62" r="4" fill="#a842ee"/>
                 <circle cx="93" cy="62" r="4" fill="#a842ee"/>
                 <circle cx="106" cy="62" r="4" fill="#a842ee"/>
@@ -454,7 +499,7 @@
     </div>
 
     <!-- ============================================================
-         VISTA 2: DASHBOARD "MI CUENTA" (REEMPLAZA EL SUPERIOR AL LOGUEAR)
+         VISTA 2: DASHBOARD "MI CUENTA"
          ============================================================ -->
     <div id="vista-dashboard-micuenta" class="dashboard-full-page oculto">
       <div class="dashboard-user-header">
@@ -590,8 +635,13 @@
 
   </main>
 
+ <!-- Carga primero la librería de Socket.IO -->
   <script src="/socket.io/socket.io.js"></script>
-  <script src="js/miCuenta.js"></script>
+  
+  <!-- Carga PRIMERO app.js para inicializar 'const socket = io();' -->
+  <script src="js/app.js"></script>
+  
+  <!-- Carga después los demás módulos que usan 'socket' -->
   <script src="js/cuentas.js"></script>
   <script src="js/tarjetas.js"></script>
   <script src="js/seguridad.js"></script>
